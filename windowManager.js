@@ -106,10 +106,9 @@ function mouseDown(e)
     if (winl && winl.className != "window maximized")
     {
         //get current window on top
-        if (document.body.onTopWindow)
-            document.body.onTopWindow.style.zIndex = "0";
+        if (document.body.onTopWindow != winl)
+            winl.style.zIndex = ++document.body.curZIndex;
         document.body.onTopWindow = winl;
-        winl.style.zIndex = "999";
 
         //mark window as currenly moved
         document.body.movingWindow = winl;
@@ -127,7 +126,7 @@ function mouseDown(e)
         //prevent default action (text selection change cursor) and set move cursor
         arguments[0].preventDefault();
         document.body.style.cursor = "move";
-    }    
+    }
 }
 
 function mouseUp(e)
@@ -142,8 +141,6 @@ function mouseUp(e)
         winl.isMoving = false; 
         document.body.style.cursor = "default";
         document.body.movingWindow = null;
-        
-        winl.querySelectorAll(".content")[0].innerHTML = winl.style.left + " " + winl.style.top;
     }
 }
 
@@ -168,14 +165,9 @@ function mouseMove(e)
         if (wleft > deskl.offsetWidth - winl.offsetWidth - 12) wleft = deskl.offsetWidth - winl.offsetWidth - 12;
         if (wtop > deskl.offsetHeight - winl.offsetHeight - 12) wtop = deskl.offsetHeight - winl.offsetHeight - 12;
         
-        
         //move window
         winl.style.left = wleft + "px";
         winl.style.top = wtop + "px";
-        
-        winl.querySelectorAll(".content")[0].innerHTML = winl.style.left + " " + winl.style.top; 
-        
-        //document.onselectstart = null;
     }
 }
 
@@ -213,28 +205,35 @@ function findPosY(obj) {
 
 function init()
 {
+    //foreach desktop
     desktops = document.querySelectorAll(".desktop");
     for (desktops_i = 0; desktops_i < desktops.length; desktops_i++)
     {
         desktop = desktops[desktops_i];
-        
+        //foreach window in desktop
         windows = desktop.querySelectorAll(".window");
         for (windows_i = 0; windows_i < windows.length; windows_i++)
         {
             win = windows[windows_i];
             
+            //set proper z-index
+            document.body.onTopWindow = win;
+            document.body.curZIndex = windows_i;
+            
+            //wrap content and create controls
             content = win.innerHTML;
             win.innerHTML = "";
             drawBorders(win);
             drawHeader(win);
-            
             win.innerHTML += '<div class="content">'+content+'</div>';
             
             //move window to position
             win.style.left = 10 + (25 * (windows_i)) + "px";
             win.style.top = 10 + (25 * (windows_i)) + "px";
+            win.positionX = win.style.left;
+            win.positionY = win.style.top;
             
-            
+            //hook movement events
             header = win.querySelectorAll(".header")[0];
             if (header)
             {
@@ -243,10 +242,9 @@ function init()
                 document.onmousemove = function(e){ mouseMove(e); };
             }
             
-            win.positionX = 0;
-            win.positionY = 0;
-            
+            //hook control buttons events
             headerButtons = win.querySelectorAll(".header a.button");
+            //foreach button
             for (headerButtons_i = 0; headerButtons_i < headerButtons.length; headerButtons_i++)
             {
                 button = headerButtons[headerButtons_i];
