@@ -18,7 +18,8 @@ root {
     background-color: cornflowerblue;
     top: 100px;
     position: relative;
-    margin: auto;
+    float: left;
+    margin: 20px;
 }
 
 .window {

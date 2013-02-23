@@ -62,9 +62,13 @@ function maximizeClick(e)
     {
         winl.positionX = winl.style.left;
         winl.positionY = winl.style.top;
+        winl.sizeX = winl.style.width;
+        winl.sizeY = winl.style.height;
 
         winl.style.left = "0px";
         winl.style.top = "0px";
+        winl.style.width = null;
+        winl.style.height = null;
         winl.setAttribute("class", "window maximized");
 
         wins = deskl.querySelectorAll(".window");
@@ -81,6 +85,8 @@ function maximizeClick(e)
         winl.setAttribute("class", "window");
         winl.style.left = winl.positionX;
         winl.style.top = winl.positionY;
+        winl.style.width = winl.sizeX;
+        winl.style.height = winl.sizeY;
 
         wins = deskl.querySelectorAll(".window");
         for (wins_i = 0; wins_i < wins.length; wins_i++)
@@ -101,31 +107,63 @@ function mouseDown(e)
 
     //get window
     winl = getParentWindowElement(sender);
-
-    //resize only if not maximized
-    if (winl && winl.className != "window maximized")
+    
+    if (winl)
     {
-        //get current window on top
-        if (document.body.onTopWindow != winl)
-            winl.style.zIndex = ++document.body.curZIndex;
-        document.body.onTopWindow = winl;
+        if (sender.className.toString().toLowerCase().split(" ")[0] == "resize")
+        {
+            document.body.movingWindow = winl;
+            arguments[0].preventDefault();
+            //get mouse position
+            winl.clickPosX = e.clientX + document.body.scrollLeft;
+            winl.clickPosY = e.clientY + document.body.scrollTop;
+            winl.clickSizeWidth = winl.offsetWidth;
+            winl.clickSizeHeight = winl.offsetHeight;
+            winl.clickWinPosX = winl.offsetLeft;
+            winl.clickWinPosY = winl.offsetTop;
 
-        //mark window as currenly moved
-        document.body.movingWindow = winl;
-        winl.isMoving = true;
+            //resize
+            if (sender.className == "resize rs")
+                winl.isMoving = "S";
+            if (sender.className == "resize rsw")
+                winl.isMoving = "SW";
+            if (sender.className == "resize rse")
+                winl.isMoving = "SE";
+            
+            if (sender.className == "resize rn")
+                winl.isMoving = "N";
+            if (sender.className == "resize rnw")
+                winl.isMoving = "NW";
+            if (sender.className == "resize rne")
+                winl.isMoving = "NE";
+            
+            if (sender.className == "resize re")
+                winl.isMoving = "E";
+            if (sender.className == "resize rw")
+                winl.isMoving = "W";
+            
+            //TODO change cursor
+        }
+        else if (winl.className != "window maximized")
+        {
+            //get current window on top
+            //TODO: move to entire window click
+            if (document.body.onTopWindow != winl)
+                winl.style.zIndex = ++document.body.curZIndex;
+            document.body.onTopWindow = winl;
 
-        //get mouse position
-        mouseX = e.clientX + document.body.scrollLeft;
-        mouseY = e.clientY + document.body.scrollTop;
-
-        //remember on-click position
-        winl.clickPosX = e.layerX;
-        winl.clickPosY = e.layerY;    
-        //alert(e.screenX);
-
-        //prevent default action (text selection change cursor) and set move cursor
-        arguments[0].preventDefault();
-        document.body.style.cursor = "move";
+            //mark window as currenly moved
+            document.body.movingWindow = winl;
+            winl.isMoving = "Yes";
+            
+            //remember on-click position
+            winl.clickPosX = e.layerX;
+            winl.clickPosY = e.layerY;  
+            
+            //prevent default action (text selection change cursor) and set move cursor
+            arguments[0].preventDefault();
+            document.body.style.cursor = "move";
+        }
     }
 }
 
@@ -135,10 +173,10 @@ function mouseUp(e)
     winl = document.body.movingWindow;
     
     //if is moving
-    if (winl && winl.isMoving)
+    if (winl && winl.isMoving != "No")
     {
         //stop moving and change cursor to default
-        winl.isMoving = false; 
+        winl.isMoving = "No"; 
         document.body.style.cursor = "default";
         document.body.movingWindow = null;
     }
@@ -148,11 +186,13 @@ function mouseMove(e)
 {
     //get currently moved window
     winl = document.body.movingWindow;
-    
+    if (!winl)
+        return;
+
+    deskl = getParentDesktopElement(winl);
     //if is moving
-    if (winl && winl.isMoving)
+    if (winl.isMoving == "Yes")
     {
-        deskl = getParentDesktopElement(winl);
         //get mouse position
         mouseX = e.clientX + document.body.scrollLeft;
         mouseY = e.clientY + document.body.scrollTop;
@@ -169,6 +209,79 @@ function mouseMove(e)
         winl.style.left = wleft + "px";
         winl.style.top = wtop + "px";
     }
+    
+    //if is moving
+    if (winl.isMoving == "S" || winl.isMoving == "SE" || winl.isMoving == "SW")
+    {
+        //get mouse position
+        mouseY = e.clientY + document.body.scrollTop;
+        if (mouseY > deskl.offsetTop + deskl.offsetHeight - 4) mouseY = deskl.offsetTop + deskl.offsetHeight - 4;
+        
+        //calculate position
+        hPos = (mouseY - winl.clickPosY);
+        height = winl.clickSizeHeight + hPos;
+        if (height < 30) height = 30;
+        
+        //move window
+        winl.style.height = height + "px";
+    }
+    if (winl.isMoving == "N" || winl.isMoving == "NE" || winl.isMoving == "NW")
+    {
+        //get mouse position
+        mouseY = e.clientY + document.body.scrollTop;
+        if (mouseY < deskl.offsetTop + 4) mouseY = deskl.offsetTop + 4;
+        
+        //calculate position
+        hPos = (mouseY - winl.clickPosY);
+        height = winl.clickSizeHeight - hPos;
+        if (height < 30) 
+        {
+            height = 30;
+            hPos = winl.clickSizeHeight - height;
+        }
+        wTop = winl.clickWinPosY + hPos - 4;
+        
+        //move window
+        winl.style.height = height + "px";
+        winl.style.top = wTop + "px";
+    }
+    
+    if (winl.isMoving == "E" || winl.isMoving == "SE" || winl.isMoving == "NE")
+    {
+        //get mouse position
+        mouseX = e.clientX + document.body.scrollLeft;
+        if (mouseX > deskl.offsetLeft + deskl.offsetWidth - 4) mouseX = deskl.offsetLeft + deskl.offsetWidth - 4;
+        
+        //calculate position
+        vPos = (mouseX - winl.clickPosX);
+        width = winl.clickSizeWidth + vPos;
+        if (width < 200) width = 200;
+        
+        //move window
+        winl.style.width = width + "px";
+    }
+    
+    if (winl.isMoving == "W" || winl.isMoving == "SW" || winl.isMoving == "NW")
+    {
+        //get mouse position
+        mouseX = e.clientX + document.body.scrollLeft;
+        if (mouseX < deskl.offsetLeft + 4) mouseX = deskl.offsetLeft + 4;
+        
+        //calculate position
+        vPos = (mouseX - winl.clickPosX);
+        width = winl.clickSizeWidth - vPos;
+        if (width < 200) 
+        {
+            width = 200;      
+            vPos = winl.clickSizeWidth - width;
+        }
+        wLeft = winl.clickWinPosX + vPos - 4;
+        
+        //move window
+        winl.style.width = width + "px";
+        winl.style.left = wLeft + "px";
+    }
+    
 }
 
 function findPosX(obj) {
@@ -234,6 +347,7 @@ function init()
             win.positionY = win.style.top;
             
             //hook movement events
+            win.isMoving = "No";
             header = win.querySelectorAll(".header")[0];
             if (header)
             {
@@ -252,9 +366,13 @@ function init()
                 switch(button.className)
                 {
                     case "button close":
-                        button.onclick = function(){
-                                alert("close");
-                                return false;
+                        button.onclick = function(e){
+                                sender = (e && e.target) || (window.event && window.event.srcElement);
+                                if (!sender)
+                                    return;
+                                winl = getParentWindowElement(sender);
+                                if (winl)
+                                    winl.parentNode.removeChild(winl);
                             };
                         break;
                     case "button maximize":
@@ -267,6 +385,15 @@ function init()
                         break;
                 }
             }
+            
+            //hook resize controls events
+            resizeCntrls = win.querySelectorAll(".resize");
+            //foreach button
+            for (resizeCntrls_i = 0; resizeCntrls_i < resizeCntrls.length; resizeCntrls_i++)
+            {
+                resizeCntrls[resizeCntrls_i].onmousedown = function(e){ mouseDown(e); };
+            }
+            
         }
     }
 }
