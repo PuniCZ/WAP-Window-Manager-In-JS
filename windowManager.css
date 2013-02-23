@@ -20,19 +20,19 @@ root {
 
 .window {
     display: block;
-    border: windowframe solid 2px;
     width: 300px;
     height: 200px;
     background-color: lightgray;
-    
     position: relative;
     left: 20px;
+    margin: 4px;
 }
 
 .maximized {
     width: 100%;
     height: 100%;
     margin: -2px;
+    border: black solid 2px;
 }
 
 .window .header {
@@ -83,3 +83,77 @@ root {
     font-size: 16px;
     font-weight: bold;
 }
+
+.resize {
+    position: absolute;
+    display: block;
+    background-color: windowframe;
+}
+
+.maximized .resize {
+    display: none;
+}
+
+.rs {
+    cursor: s-resize;
+    width: 100%;
+    height: 4px;
+    bottom: -4px;
+    left: 0px;
+}
+
+.rn {
+    cursor: n-resize;
+    width: 100%;
+    height: 4px;
+    top: -4px;
+    left: 0px;
+}
+
+.rw {
+    cursor: w-resize;
+    width: 4px;
+    height: 100%;
+    top: 0px;
+    left: -4px;
+}
+
+.re {
+    cursor: e-resize;
+    width: 4px;
+    height: 100%;
+    top: 0px;
+    right: -4px;
+}
+
+.rse {
+    cursor: se-resize;
+    width: 4px;
+    height: 4px;
+    bottom: -4px;
+    right: -4px;
+}
+
+.rne {
+    cursor: ne-resize;
+    width: 4px;
+    height: 4px;
+    top: -4px;
+    right: -4px;
+}
+
+.rnw {
+    cursor: nw-resize;
+    width: 4px;
+    height: 4px;
+    top: -4px;
+    left: -4px;
+}
+
+.rsw {
+    cursor: sw-resize;
+    width: 4px;
+    height: 4px;
+    bottom: -4px;
+    left: -4px;
+} 

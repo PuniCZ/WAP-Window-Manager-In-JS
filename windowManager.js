@@ -24,6 +24,32 @@ function getParentWindowElement(el)
     return p;
 }
 
+function drawBorders(win)
+{
+    win.innerHTML += '\
+            <div class="resize rn"></div>  \
+            <div class="resize rs"></div>  \
+            <div class="resize rw"></div>  \
+            <div class="resize re"></div>  \
+            <div class="resize rne"></div> \
+            <div class="resize rse"></div> \
+            <div class="resize rnw"></div> \
+            <div class="resize rsw"></div> \
+        ';
+}
+
+function drawHeader(win)
+{
+    win.innerHTML += '\
+            <div class="header"> \
+                <span class="title">' + win.title + '</span> \
+                <a href="#" class="button close">X</a> \
+                <a href="#" class="button maximize">☐</a> \
+                <a href="#" class="button minimize">▂</a> \
+            </div> \
+        ';
+}
+
 function init()
 {
     var desktops = document.querySelectorAll(".desktop");
@@ -36,17 +62,22 @@ function init()
         {
             var win = windows[windows_i];
             
+            drawBorders(win);
+            drawHeader(win);
+            
             var header = win.querySelectorAll(".header")[0];
             if (header)
             {
                 header.onmousedown = function(){
-                        arguments[0].preventDefault();
-                        win.clickPosX = arguments[0].layerX;
-                        win.clickPosY = arguments[0].layerY;
-                        
-                        win.isMoving = true;
-                        document.body.style.cursor = "move";
-                        document.onselectstart = function(){ return false; }
+                        if (win.className != "window maximized")
+                        {
+                            arguments[0].preventDefault();
+                            win.clickPosX = arguments[0].layerX;
+                            win.clickPosY = arguments[0].layerY;
+
+                            win.isMoving = true;
+                            document.body.style.cursor = "move";
+                        }
                     };
                 document.onmouseup = function(){
                         //alert("mouse up");
@@ -54,7 +85,6 @@ function init()
                         {
                             win.isMoving = false; 
                             document.body.style.cursor = "default";
-                            
                         }
                     };
                 document.onmousemove = function(){
@@ -115,15 +145,6 @@ function init()
                         break;
                 }
             }
-            
-            
         }
-        
-        
-        
     }
-    
-    
-    
-    
 }
