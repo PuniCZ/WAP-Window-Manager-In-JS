@@ -16,6 +16,9 @@ root {
     width: 800px;
     height: 600px;
     background-color: cornflowerblue;
+    top: 100px;
+    position: relative;
+    margin: auto;
 }
 
 .window {
@@ -24,7 +27,6 @@ root {
     height: 200px;
     background-color: lightgray;
     position: absolute;
-    left: 20px;
     margin: 4px;
     float: left;
 }

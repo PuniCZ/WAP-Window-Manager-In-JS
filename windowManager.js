@@ -50,6 +50,167 @@ function drawHeader(win)
         ';
 }
 
+function maximizeClick(e)
+{
+    sender = (e && e.target) || (window.event && window.event.srcElement);
+    if (!sender)
+        return;
+    
+    deskl = getParentDesktopElement(sender);
+    winl = getParentWindowElement(sender);
+    if (winl.className.toLowerCase() == "window")
+    {
+        winl.positionX = winl.style.left;
+        winl.positionY = winl.style.top;
+
+        winl.style.left = "0px";
+        winl.style.top = "0px";
+        winl.setAttribute("class", "window maximized");
+
+        wins = deskl.querySelectorAll(".window");
+        for (wins_i = 0; wins_i < wins.length; wins_i++)
+        {
+            if (wins[wins_i] != winl)
+            {
+                wins[wins_i].style.display = "none";
+            }
+        }
+    }
+    else
+    {
+        winl.setAttribute("class", "window");
+        winl.style.left = winl.positionX;
+        winl.style.top = winl.positionY;
+
+        wins = deskl.querySelectorAll(".window");
+        for (wins_i = 0; wins_i < wins.length; wins_i++)
+        {
+            if (wins[wins_i] != winl)
+            {
+                wins[wins_i].style.display = "block";
+            }
+        }
+    }
+}
+
+function mouseDown(e)
+{
+    sender = (e && e.target) || (window.event && window.event.srcElement);
+    if (!sender)
+        return;
+
+    //get window
+    winl = getParentWindowElement(sender);
+
+    //resize only if not maximized
+    if (winl && winl.className != "window maximized")
+    {
+        //get current window on top
+        if (document.body.onTopWindow)
+            document.body.onTopWindow.style.zIndex = "0";
+        document.body.onTopWindow = winl;
+        winl.style.zIndex = "999";
+
+        //mark window as currenly moved
+        document.body.movingWindow = winl;
+        winl.isMoving = true;
+
+        //get mouse position
+        mouseX = e.clientX + document.body.scrollLeft;
+        mouseY = e.clientY + document.body.scrollTop;
+
+        //remember on-click position
+        winl.clickPosX = e.layerX;
+        winl.clickPosY = e.layerY;    
+        //alert(e.screenX);
+
+        //prevent default action (text selection change cursor) and set move cursor
+        arguments[0].preventDefault();
+        document.body.style.cursor = "move";
+    }    
+}
+
+function mouseUp(e)
+{
+    //get currently moved window
+    winl = document.body.movingWindow;
+    
+    //if is moving
+    if (winl && winl.isMoving)
+    {
+        //stop moving and change cursor to default
+        winl.isMoving = false; 
+        document.body.style.cursor = "default";
+        document.body.movingWindow = null;
+        
+        winl.querySelectorAll(".content")[0].innerHTML = winl.style.left + " " + winl.style.top;
+    }
+}
+
+function mouseMove(e)
+{
+    //get currently moved window
+    winl = document.body.movingWindow;
+    
+    //if is moving
+    if (winl && winl.isMoving)
+    {
+        deskl = getParentDesktopElement(winl);
+        //get mouse position
+        mouseX = e.clientX + document.body.scrollLeft;
+        mouseY = e.clientY + document.body.scrollTop;
+        
+        //calculate position
+        wleft = (mouseX - findPosX(deskl)) - winl.clickPosX - 6;
+        wtop = (mouseY - findPosY(deskl)) - winl.clickPosY - 6;
+        if (wleft < 0) wleft = 0;
+        if (wtop < 0) wtop = 0;
+        if (wleft > deskl.offsetWidth - winl.offsetWidth - 12) wleft = deskl.offsetWidth - winl.offsetWidth - 12;
+        if (wtop > deskl.offsetHeight - winl.offsetHeight - 12) wtop = deskl.offsetHeight - winl.offsetHeight - 12;
+        
+        
+        //move window
+        winl.style.left = wleft + "px";
+        winl.style.top = wtop + "px";
+        
+        winl.querySelectorAll(".content")[0].innerHTML = winl.style.left + " " + winl.style.top; 
+        
+        //document.onselectstart = null;
+    }
+}
+
+function findPosX(obj) {
+    curleft = 0;
+    if (obj.offsetParent) {
+        while (1) {
+            curleft+=obj.offsetLeft;
+            if (!obj.offsetParent) {
+                break;
+            }
+            obj=obj.offsetParent;
+        }
+    } else if (obj.x) {
+        curleft+=obj.x;
+    }
+    return curleft;
+}
+
+function findPosY(obj) {
+    curtop = 0;
+    if (obj.offsetParent) {
+        while (1) {
+            curtop+=obj.offsetTop;
+            if (!obj.offsetParent) {
+                break;
+            }
+            obj=obj.offsetParent;
+        }
+    } else if (obj.y) {
+        curtop+=obj.y;
+    }
+    return curtop;
+}
+
 function init()
 {
     desktops = document.querySelectorAll(".desktop");
@@ -62,50 +223,24 @@ function init()
         {
             win = windows[windows_i];
             
+            content = win.innerHTML;
+            win.innerHTML = "";
             drawBorders(win);
             drawHeader(win);
+            
+            win.innerHTML += '<div class="content">'+content+'</div>';
+            
+            //move window to position
+            win.style.left = 10 + (25 * (windows_i)) + "px";
+            win.style.top = 10 + (25 * (windows_i)) + "px";
+            
             
             header = win.querySelectorAll(".header")[0];
             if (header)
             {
-                header.onmousedown = function(){
-                        sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
-                        winl = getParentWindowElement(sender);
-                        if (winl && winl.className != "window maximized")
-                        {
-                            document.body.movingWindow = winl;
-                            arguments[0].preventDefault();
-                            winl.clickPosX = arguments[0].layerX;
-                            winl.clickPosY = arguments[0].layerY;
-
-                            winl.isMoving = true;
-                            document.body.style.cursor = "move";
-                        }
-                    };
-                document.onmouseup = function(){
-                        sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
-                        winl = document.body.movingWindow;
-                        if (winl && winl.isMoving)
-                        {
-                            winl.isMoving = false; 
-                            document.body.style.cursor = "default";
-                            document.body.movingWindow = null;
-                        }
-                    };
-                document.onmousemove = function(){
-                        sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
-                        winl = document.body.movingWindow;
-                        if (winl && winl.isMoving)
-                        {
-                            mouseX = arguments[0].clientX + document.body.scrollLeft;
-                            mouseY = arguments[0].clientY + document.body.scrollTop;
-                            
-                            winl.style.left = (mouseX - winl.clickPosX - 14) + "px";
-                            winl.style.top = (mouseY - winl.clickPosY - 14) + "px";
-                            
-                            document.onselectstart = null;
-                        }
-                    };
+                header.onmousedown = function(e){ mouseDown(e); };
+                document.onmouseup = function(e){ mouseUp(e); };
+                document.onmousemove = function(e){ mouseMove(e); };
             }
             
             win.positionX = 0;
@@ -125,45 +260,7 @@ function init()
                             };
                         break;
                     case "button maximize":
-                        button.onclick = function(){
-                                sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
-                                deskl = getParentDesktopElement(sender);
-                                winl = getParentWindowElement(sender);
-                                if (winl.className.toLowerCase() == "window")
-                                {
-                                    winl.positionX = winl.style.left;
-                                    winl.positionY = winl.style.top;
-                                    
-                                    winl.style.left = "0px";
-                                    winl.style.top = "0px";
-                                    winl.setAttribute("class", "window maximized");
-                                    
-                                    wins = deskl.querySelectorAll(".window");
-                                    for (wins_i = 0; wins_i < wins.length; wins_i++)
-                                    {
-                                        if (wins[wins_i] != winl)
-                                        {
-                                            wins[wins_i].style.display = "none";
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    winl.setAttribute("class", "window");
-                                    winl.style.left = winl.positionX;
-                                    winl.style.top = winl.positionY;
-                                    
-                                    wins = deskl.querySelectorAll(".window");
-                                    for (wins_i = 0; wins_i < wins.length; wins_i++)
-                                    {
-                                        if (wins[wins_i] != winl)
-                                        {
-                                            wins[wins_i].style.display = "block";
-                                        }
-                                    }
-                                }
-                                
-                            };
+                        button.onclick = function(e){ maximizeClick(e); };
                         break;
                     case "button minimize":
                         button.onclick = function(){
