@@ -6,7 +6,7 @@
 
 function getParentDesktopElement(el)
 {
-    var p = el.parentNode;
+    p = el.parentNode;
     while (p && p.className.toString().toLowerCase() != "desktop")
     {
         p = p.parentNode;
@@ -16,7 +16,7 @@ function getParentDesktopElement(el)
 
 function getParentWindowElement(el)
 {
-    var p = el.parentNode;
+    p = el.parentNode;
     while (p && p.className.toString().toLowerCase().split(" ")[0] != "window")
     {
         p = p.parentNode;
@@ -42,7 +42,7 @@ function drawHeader(win)
 {
     win.innerHTML += '\
             <div class="header"> \
-                <span class="title">' + win.title + '</span> \
+                <span class="title">' + win.getAttribute("data-title") + '</span> \
                 <a href="#" class="button close">X</a> \
                 <a href="#" class="button maximize">☐</a> \
                 <a href="#" class="button minimize">▂</a> \
@@ -52,49 +52,56 @@ function drawHeader(win)
 
 function init()
 {
-    var desktops = document.querySelectorAll(".desktop");
-    for (var desktops_i = 0; desktops_i < desktops.length; desktops_i++)
+    desktops = document.querySelectorAll(".desktop");
+    for (desktops_i = 0; desktops_i < desktops.length; desktops_i++)
     {
-        var desktop = desktops[desktops_i];
+        desktop = desktops[desktops_i];
         
-        var windows = desktop.querySelectorAll(".window");
-        for (var windows_i = 0; windows_i < windows.length; windows_i++)
+        windows = desktop.querySelectorAll(".window");
+        for (windows_i = 0; windows_i < windows.length; windows_i++)
         {
-            var win = windows[windows_i];
+            win = windows[windows_i];
             
             drawBorders(win);
             drawHeader(win);
             
-            var header = win.querySelectorAll(".header")[0];
+            header = win.querySelectorAll(".header")[0];
             if (header)
             {
                 header.onmousedown = function(){
-                        if (win.className != "window maximized")
+                        sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
+                        winl = getParentWindowElement(sender);
+                        if (winl && winl.className != "window maximized")
                         {
+                            document.body.movingWindow = winl;
                             arguments[0].preventDefault();
-                            win.clickPosX = arguments[0].layerX;
-                            win.clickPosY = arguments[0].layerY;
+                            winl.clickPosX = arguments[0].layerX;
+                            winl.clickPosY = arguments[0].layerY;
 
-                            win.isMoving = true;
+                            winl.isMoving = true;
                             document.body.style.cursor = "move";
                         }
                     };
                 document.onmouseup = function(){
-                        //alert("mouse up");
-                        if (win.isMoving)
+                        sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
+                        winl = document.body.movingWindow;
+                        if (winl && winl.isMoving)
                         {
-                            win.isMoving = false; 
+                            winl.isMoving = false; 
                             document.body.style.cursor = "default";
+                            document.body.movingWindow = null;
                         }
                     };
                 document.onmousemove = function(){
-                        if (win.isMoving)
+                        sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
+                        winl = document.body.movingWindow;
+                        if (winl && winl.isMoving)
                         {
-                            var mouseX = arguments[0].clientX + document.body.scrollLeft;
-                            var mouseY = arguments[0].clientY + document.body.scrollTop;
+                            mouseX = arguments[0].clientX + document.body.scrollLeft;
+                            mouseY = arguments[0].clientY + document.body.scrollTop;
                             
-                            win.style.left = (mouseX - win.clickPosX - 10) + "px";
-                            win.style.top = (mouseY - win.clickPosY - 10) + "px";
+                            winl.style.left = (mouseX - winl.clickPosX - 14) + "px";
+                            winl.style.top = (mouseY - winl.clickPosY - 14) + "px";
                             
                             document.onselectstart = null;
                         }
@@ -104,10 +111,10 @@ function init()
             win.positionX = 0;
             win.positionY = 0;
             
-            var headerButtons = win.querySelectorAll(".header a.button");
-            for (var headerButtons_i = 0; headerButtons_i < headerButtons.length; headerButtons_i++)
+            headerButtons = win.querySelectorAll(".header a.button");
+            for (headerButtons_i = 0; headerButtons_i < headerButtons.length; headerButtons_i++)
             {
-                var button = headerButtons[headerButtons_i];
+                button = headerButtons[headerButtons_i];
 
                 switch(button.className)
                 {
@@ -119,21 +126,41 @@ function init()
                         break;
                     case "button maximize":
                         button.onclick = function(){
-                                var window = getParentWindowElement(this);
-                                if (window.className.toLowerCase() == "window")
+                                sender = (arguments[0] && arguments[0].target) || (window.event && window.event.srcElement);
+                                deskl = getParentDesktopElement(sender);
+                                winl = getParentWindowElement(sender);
+                                if (winl.className.toLowerCase() == "window")
                                 {
-                                    win.positionX = win.style.left;
-                                    win.positionY = win.style.top;
+                                    winl.positionX = winl.style.left;
+                                    winl.positionY = winl.style.top;
                                     
-                                    win.style.left = "0px";
-                                    win.style.top = "0px";
-                                    window.setAttribute("class", "window maximized");
+                                    winl.style.left = "0px";
+                                    winl.style.top = "0px";
+                                    winl.setAttribute("class", "window maximized");
+                                    
+                                    wins = deskl.querySelectorAll(".window");
+                                    for (wins_i = 0; wins_i < wins.length; wins_i++)
+                                    {
+                                        if (wins[wins_i] != winl)
+                                        {
+                                            wins[wins_i].style.display = "none";
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    window.setAttribute("class", "window");
-                                    win.style.left = win.positionX;
-                                    win.style.top = win.positionY;
+                                    winl.setAttribute("class", "window");
+                                    winl.style.left = winl.positionX;
+                                    winl.style.top = winl.positionY;
+                                    
+                                    wins = deskl.querySelectorAll(".window");
+                                    for (wins_i = 0; wins_i < wins.length; wins_i++)
+                                    {
+                                        if (wins[wins_i] != winl)
+                                        {
+                                            wins[wins_i].style.display = "block";
+                                        }
+                                    }
                                 }
                                 
                             };
