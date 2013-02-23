@@ -1,0 +1,85 @@
+/* 
+    Document   : windowManager
+    Created on : Feb 22, 2013, 10:50:46 PM
+    Author     : Puni
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+.desktop {
+    display: block;
+    border: black solid 2px;
+    width: 800px;
+    height: 600px;
+    background-color: cornflowerblue;
+}
+
+.window {
+    display: block;
+    border: windowframe solid 2px;
+    width: 300px;
+    height: 200px;
+    background-color: lightgray;
+    
+    position: relative;
+    left: 20px;
+}
+
+.maximized {
+    width: 100%;
+    height: 100%;
+    margin: -2px;
+}
+
+.window .header {
+    display: block;
+    width: 100%;
+    height: 24px;
+    background-color: blue;
+    color: black;
+    border-bottom: windowframe solid 2px;
+}
+
+.window .header a.button {
+    display: block;
+    background-color: darkgray;
+    border: black solid 1px;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
+    font-family: sans-serif;
+    font-size: 16px;
+    margin: 2px 3px 2px 0px;
+    float: right;
+    color: black;
+}
+
+.window .header a.close {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.window .header a.minimize {
+    font-size: 14px;
+}
+
+.window .header a.maximize {
+    font-size: 16px;
+}
+
+.window .header .title {
+    color: white;
+    display: block;
+    float: left;
+    margin: 3px 0px 0px 3px;
+    text-decoration: none;
+    font-family: arial;
+    font-size: 16px;
+    font-weight: bold;
+}
