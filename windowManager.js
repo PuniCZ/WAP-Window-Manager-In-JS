@@ -4,6 +4,47 @@
  */
 
 
+function findPosX(obj) {
+    curleft = 0;
+    if (obj.offsetParent) {
+        while (1) {
+            curleft+=obj.offsetLeft;
+            if (!obj.offsetParent) {
+                break;
+            }
+            obj=obj.offsetParent;
+        }
+    } else if (obj.x) {
+        curleft+=obj.x;
+    }
+    return curleft;
+}
+
+function findPosY(obj) {
+    curtop = 0;
+    if (obj.offsetParent) {
+        while (1) {
+            curtop+=obj.offsetTop;
+            if (!obj.offsetParent) {
+                break;
+            }
+            obj=obj.offsetParent;
+        }
+    } else if (obj.y) {
+        curtop+=obj.y;
+    }
+    return curtop;
+}
+
+function getStyle(el,styleProp)
+{
+    if (el.currentStyle)
+        y = el.currentStyle[styleProp];
+    else if (window.getComputedStyle)
+        y = document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
+    return y;
+}
+
 function getParentDesktopElement(el)
 {
     p = el.parentNode;
@@ -43,9 +84,9 @@ function drawHeader(win)
     win.innerHTML += '\
             <div class="header"> \
                 <span class="title">' + win.getAttribute("data-title") + '</span> \
-                <a href="#" class="button close">X</a> \
-                <a href="#" class="button maximize">☐</a> \
-                <a href="#" class="button minimize">▂</a> \
+                <a href="#" title="Close" class="button close">X</a> \
+                <a href="#" title="Maximize" class="button maximize">☐</a> \
+                <a href="#" title="Minimize" class="button minimize">▂</a> \
             </div> \
         ';
 }
@@ -58,7 +99,7 @@ function maximizeClick(e)
     
     deskl = getParentDesktopElement(sender);
     winl = getParentWindowElement(sender);
-    if (winl.className.toLowerCase() == "window")
+    if (winl.className.toLowerCase() != "window maximized")
     {
         winl.positionX = winl.style.left;
         winl.positionY = winl.style.top;
@@ -79,6 +120,12 @@ function maximizeClick(e)
                 wins[wins_i].style.display = "none";
             }
         }
+        sender.innerHTML="▭";
+        sender.title = "Restore down";
+        
+        button = winl.querySelectorAll(".minimize")[0];
+        button.innerHTML="▂";
+        button.title = "Minimize";
     }
     else
     {
@@ -96,6 +143,59 @@ function maximizeClick(e)
                 wins[wins_i].style.display = "block";
             }
         }
+        sender.innerHTML="☐";
+        sender.title = "Maximize";
+    }
+}
+
+function minimizeClick(e)
+{
+    sender = (e && e.target) || (window.event && window.event.srcElement);
+    if (!sender)
+        return;
+    
+    deskl = getParentDesktopElement(sender);
+    winl = getParentWindowElement(sender);
+    if (winl.className.toLowerCase() != "window minimized")
+    {
+        winl.positionX = winl.style.left;
+        winl.positionY = winl.style.top;
+        winl.sizeX = winl.style.width;
+        winl.sizeY = winl.style.height;
+
+        winl.style.left = null;
+        winl.style.top = null;
+        winl.style.width = null;
+        winl.style.height = null;
+        winl.setAttribute("class", "window minimized");
+        
+        sender.innerHTML="▭";
+        sender.title = "Restore up";
+        
+        button = winl.querySelectorAll(".maximize")[0];
+        button.innerHTML="☐";
+        button.title = "Maximize";
+        
+        wins = deskl.querySelectorAll(".window");
+        for (wins_i = 0; wins_i < wins.length; wins_i++)
+        {
+            if (wins[wins_i] != winl)
+            {
+                wins[wins_i].style.display = "block";
+            }
+        }
+        
+    }
+    else
+    {
+        winl.setAttribute("class", "window");
+        winl.style.left = winl.positionX;
+        winl.style.top = winl.positionY;
+        winl.style.width = winl.sizeX;
+        winl.style.height = winl.sizeY;
+        
+        sender.innerHTML="▂";
+        sender.title = "Minimize";
     }
 }
 
@@ -107,9 +207,9 @@ function mouseDown(e)
 
     //get window
     winl = getParentWindowElement(sender);
-    
     if (winl)
     {
+        deskl = getParentDesktopElement(winl);
         if (sender.className.toString().toLowerCase().split(" ")[0] == "resize")
         {
             document.body.movingWindow = winl;
@@ -142,7 +242,7 @@ function mouseDown(e)
             if (sender.className == "resize rw")
                 winl.isMoving = "W";
             
-            //TODO change cursor
+            document.body.style.cursor = getStyle(sender, "cursor");
         }
         else if (winl.className != "window maximized")
         {
@@ -157,8 +257,8 @@ function mouseDown(e)
             winl.isMoving = "Yes";
             
             //remember on-click position
-            winl.clickPosX = e.layerX;
-            winl.clickPosY = e.layerY;  
+            winl.clickPosX = e.clientX + document.body.scrollLeft - (deskl.offsetLeft + winl.offsetLeft + 2);
+            winl.clickPosY = e.clientY + document.body.scrollTop - (deskl.offsetTop + winl.offsetTop + 2);
             
             //prevent default action (text selection change cursor) and set move cursor
             arguments[0].preventDefault();
@@ -284,37 +384,7 @@ function mouseMove(e)
     
 }
 
-function findPosX(obj) {
-    curleft = 0;
-    if (obj.offsetParent) {
-        while (1) {
-            curleft+=obj.offsetLeft;
-            if (!obj.offsetParent) {
-                break;
-            }
-            obj=obj.offsetParent;
-        }
-    } else if (obj.x) {
-        curleft+=obj.x;
-    }
-    return curleft;
-}
 
-function findPosY(obj) {
-    curtop = 0;
-    if (obj.offsetParent) {
-        while (1) {
-            curtop+=obj.offsetTop;
-            if (!obj.offsetParent) {
-                break;
-            }
-            obj=obj.offsetParent;
-        }
-    } else if (obj.y) {
-        curtop+=obj.y;
-    }
-    return curtop;
-}
 
 function init()
 {
@@ -376,12 +446,20 @@ function init()
                             };
                         break;
                     case "button maximize":
+                        if (win.className == "window maximized")
+                        {
+                            button.innerHTML="▭";
+                            button.title = "Restore down";
+                        }
                         button.onclick = function(e){ maximizeClick(e); };
                         break;
                     case "button minimize":
-                        button.onclick = function(){
-                                alert("min");
-                            };
+                        if (win.className == "window minimized")
+                        {
+                            button.innerHTML="▭";
+                            button.title = "Restore up";
+                        }
+                        button.onclick = function(e){ minimizeClick(e); };
                         break;
                 }
             }
