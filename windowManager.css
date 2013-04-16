@@ -1,37 +1,60 @@
 /* 
-    Document   : windowManager
-    Created on : Feb 22, 2013, 10:50:46 PM
-    Author     : Puni
-    Description:
-        Purpose of the stylesheet follows.
-*/
+ * Window manager in JavaScript.
+ * Stylesheet part.
+ * 
+ * Implements independent desktops and windows in web broswer.
+ * See more in navod.html.
+ * 
+ * This aplication was created as project into WAP. 
+ * 
+ * Author: Filip Zapletal (xzaple27@stud.fit.vutbr.cz)
+ */
 
-root { 
-    display: block;
-}
+ 
 
+/*
+ * Basic desktop style.
+ */
 .desktop {
-    display: block;
-    border: black solid 2px;
-    width: 800px;
-    height: 600px;
-    background-color: cornflowerblue;
-    top: 100px;
+    display: block;       
     position: relative;
     float: left;
-    margin: 20px;
+    
+    /* Default desktop border */
+    border: black solid 2px;  
+    
+    /* Default desktop margin */
+    margin: 20px;    
+    
+    /* Default desktop size */
+    width: 800px;
+    height: 600px;
+    
+    /* Default desktop color */
+    background-color: cornflowerblue;
 }
 
+/*
+ * Basic window style.
+ */
 .window {
-    display: block;
-    width: 300px;
-    height: 200px;
-    background-color: lightgray;
+    display: block;       
     position: absolute;
     margin: 4px;
     float: left;
+    
+    
+    /* Default window size */
+    width: 300px;
+    height: 200px; 
+    
+    /* Default window color */
+    background-color: lightgray;    
 }
 
+/*
+ * Maximized window look.
+ */
 .maximized {
     width: 100%;
     height: 100%;
@@ -40,6 +63,9 @@ root {
     position: static;
 }
 
+/*
+ * Minimized window look.
+ */
 .minimized {
     width: 200px;
     height: 25px;
@@ -48,31 +74,59 @@ root {
     position: static;
 }
 
+/*
+ * Window content style.
+ */
+.window .content {
+    display: block;
+    overflow: hidden;
+}
+
+/*
+ * Hide content when minimized.
+ */
+.minimized .content {
+    display: none;
+}
+
+/*
+ * Window header style.
+ */
 .window .header {
     display: block;
     width: 100%;
     height: 24px;
+    
+    /* You can change window header colors and border below. */
     background-color: blue;
     color: black;
     border-bottom: black solid 2px;
 }
 
+/*
+ * Window header button base style.
+ */
 .window .header a.button {
-    display: block;
-    background-color: darkgray;
-    border: black solid 1px;
+    display: block;    
     width: 18px;
     height: 18px;
+    margin: 2px 3px 2px 0px;      
     text-align: center;
-    vertical-align: middle;
+    vertical-align: middle;   
+    float: right;
+      
+    /* You can chnge buttons style (colors, fonts...) below. */
+    background-color: darkgray;
+    border: black solid 1px;    
     text-decoration: none;
     font-family: sans-serif;
     font-size: 16px;
-    margin: 2px 3px 2px 0px;
-    float: right;
     color: black;
 }
 
+/*
+ * Window header buttons font change depends on window state (maximized or minimized).
+ */
 .window .header a.close {
     font-size: 16px;
     font-weight: bold;
@@ -86,23 +140,36 @@ root {
     font-size: 16px;
 }
 
+/*
+ * Window text title style.
+ */
 .window .header .title {
-    color: white;
     display: block;
     float: left;
     margin: 3px 0px 0px 3px;
+    
+    /* You can change font and color of window title */
+    color: white;
     text-decoration: none;
     font-family: arial;
     font-size: 16px;
     font-weight: bold;
 }
 
+/*
+ * Base class for resize borders.
+ */
 .resize {
     position: absolute;
     display: block;
+    
+    /* Here you can change resizeable window borders. */
     background-color: windowframe;
 }
 
+/*
+ * Hide "resizeable" borders when maximized or minimized.
+ */
 .maximized .resize {
     display: none;
 }
@@ -111,6 +178,9 @@ root {
     display: none;
 }
 
+/*
+ * Bellow are definitions of styles for resizeable borders (cursors and positions).
+ */
 .rs {
     cursor: s-resize;
     width: 100%;

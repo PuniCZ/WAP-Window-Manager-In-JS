@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
+ 
+Window manager in JavaScript demo aplication.
+
+Implements independent desktops and windows in web broswer.
+See more in navod.html.
+
+This aplication was created as project into WAP. 
+
+Author: Filip Zapletal (xzaple27@stud.fit.vutbr.cz) 
 -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>Javascript window manager demo application</title>
+        <title>Javascript Window Manager demo application</title>
         <link rel="stylesheet" href="windowManager.css" type="text/css" />
         
         <script type="text/javascript" src="windowManager.js" />
@@ -14,16 +21,21 @@ and open the template in the editor.
     <body>
         <div class="desktop">
             <div class="window" data-title="Okno 1">
+                <p style="margin:5px">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sed nulla sit amet 
+                    mi tincidunt convallis. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus
+                    mus. Nulla facilisi. Mauris eget mattis turpis. Vivamus facilisis ornare rhoncus. In nec magna nunc. 
+                    In hac habitasse platea dictumst. Ut in purus id tellus mollis luctus. </p>               
             </div>
             
             <div class="window" data-title="Okno 2">
+                <img style="border: white 35px solid;" src ="http://www.fit.vutbr.cz/images/logo_fit.png"/>
             </div>
             
             <div class="window" data-title="Okno 3">
             </div>
         </div>
         
-        <div class="desktop">
+        <div class="desktop" style="background-color: orange; width: 640px; height: 480px;">
             <div class="window minimized" data-title="Okno 1">
             </div>
             
@@ -32,13 +44,7 @@ and open the template in the editor.
             
             <div class="window" data-title="Okno 3">
             </div>
-        </div>
-        
-        <script type="text/javascript">
-            init();
-            
-            //window.alert(getParentDesktopElement(document.querySelectorAll(".title")[0]));
-        </script>
+        </div>       
         
     </body>
 </html>

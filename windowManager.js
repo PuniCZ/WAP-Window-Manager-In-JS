@@ -1,9 +1,19 @@
 /* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Window manager in JavaScript.
+ * 
+ * Implements independent desktops and windows in web broswer.
+ * See more in navod.html.
+ * 
+ * This aplication was created as project into WAP. 
+ * 
+ * @author Filip Zapletal (xzaple27@stud.fit.vutbr.cz)
  */
 
 
+/**
+ * Helper function for finding object X position
+ * @param obj Object.
+ */
 function findPosX(obj) {
     curleft = 0;
     if (obj.offsetParent) {
@@ -20,6 +30,10 @@ function findPosX(obj) {
     return curleft;
 }
 
+/**
+ * Helper function for finding object Y position
+ * @param obj Object.
+ */
 function findPosY(obj) {
     curtop = 0;
     if (obj.offsetParent) {
@@ -36,7 +50,13 @@ function findPosY(obj) {
     return curtop;
 }
 
-function getStyle(el,styleProp)
+/**
+ * Helper function for calculating current style value.
+ * @param el Searched element.
+ * @param styleProp Style property.
+ * @return Current element el style property styleProp.
+ */
+function getStyle(el, styleProp)
 {
     if (el.currentStyle)
         y = el.currentStyle[styleProp];
@@ -45,6 +65,11 @@ function getStyle(el,styleProp)
     return y;
 }
 
+/**
+ * Find parent desktop for element.
+ * @param el Element.
+ * @return Desktop containing el.
+ */
 function getParentDesktopElement(el)
 {
     p = el.parentNode;
@@ -55,6 +80,11 @@ function getParentDesktopElement(el)
     return p;
 }
 
+/**
+ * Find window for element.
+ * @param el Element.
+ * @return Window containing el.
+ */
 function getParentWindowElement(el)
 {
     p = el.parentNode;
@@ -65,6 +95,10 @@ function getParentWindowElement(el)
     return p;
 }
 
+/**
+ * Draws borders for window.
+ * @param win Window.
+ */
 function drawBorders(win)
 {
     win.innerHTML += '\
@@ -79,6 +113,10 @@ function drawBorders(win)
         ';
 }
 
+/**
+ * Draws header for window.
+ * @param win Window.
+ */
 function drawHeader(win)
 {
     win.innerHTML += '\
@@ -91,6 +129,10 @@ function drawHeader(win)
         ';
 }
 
+/**
+ * Event handler processing window maximalization.
+ * @param e Event args.
+ */
 function maximizeClick(e)
 {
     sender = (e && e.target) || (window.event && window.event.srcElement);
@@ -148,6 +190,10 @@ function maximizeClick(e)
     }
 }
 
+/**
+ * Event handler processing window minimalization.
+ * @param e Event args.
+ */
 function minimizeClick(e)
 {
     sender = (e && e.target) || (window.event && window.event.srcElement);
@@ -199,6 +245,10 @@ function minimizeClick(e)
     }
 }
 
+/**
+ * Event handler processing mouse down events for start of window moving and resizing.
+ * @param e Event args.
+ */
 function mouseDown(e)
 {
     sender = (e && e.target) || (window.event && window.event.srcElement);
@@ -222,7 +272,7 @@ function mouseDown(e)
             winl.clickWinPosX = winl.offsetLeft;
             winl.clickWinPosY = winl.offsetTop;
 
-            //resize
+            //find direction and set resize flag
             if (sender.className == "resize rs")
                 winl.isMoving = "S";
             if (sender.className == "resize rsw")
@@ -242,16 +292,12 @@ function mouseDown(e)
             if (sender.className == "resize rw")
                 winl.isMoving = "W";
             
+            //and also change cursor
             document.body.style.cursor = getStyle(sender, "cursor");
         }
-        else if (winl.className != "window maximized")
+        else if (winl.className != "window maximized") 
+        //not maximized
         {
-            //get current window on top
-            //TODO: move to entire window click
-            if (document.body.onTopWindow != winl)
-                winl.style.zIndex = ++document.body.curZIndex;
-            document.body.onTopWindow = winl;
-
             //mark window as currenly moved
             document.body.movingWindow = winl;
             winl.isMoving = "Yes";
@@ -267,6 +313,36 @@ function mouseDown(e)
     }
 }
 
+/**
+ * Event handler processing mouse down events for bringing window on top.
+ * @param e Event args.
+ */
+function mouseDownEntireWindow(e)
+{
+    sender = (e && e.target) || (window.event && window.event.srcElement);
+    if (!sender)
+        return;
+
+    //get window
+    winl = getParentWindowElement(sender);
+    if (winl)
+    {
+        deskl = getParentDesktopElement(winl);
+        if (winl.className != "window maximized") 
+        //not maximized
+        {
+            //get current window on top
+            if (deskl.onTopWindow != winl)
+                winl.style.zIndex = ++document.body.curZIndex;
+            deskl.onTopWindow = winl;
+        }
+    }
+}
+
+/**
+ * Event handler processing mouse release for window resize finish.
+ * @param e Event args.
+ */
 function mouseUp(e)
 {
     //get currently moved window
@@ -282,6 +358,10 @@ function mouseUp(e)
     }
 }
 
+/**
+ * Event handler processing mouse move and window moving and resizing.
+ * @param e Event args.
+ */
 function mouseMove(e)
 {
     //get currently moved window
@@ -290,6 +370,9 @@ function mouseMove(e)
         return;
 
     deskl = getParentDesktopElement(winl);
+    cnt = winl.querySelectorAll("div.content")[0];
+    head = winl.querySelectorAll("div.header")[0];
+    
     //if is moving
     if (winl.isMoving == "Yes")
     {
@@ -310,7 +393,8 @@ function mouseMove(e)
         winl.style.top = wtop + "px";
     }
     
-    //if is moving
+    //if is resizing
+    //bottom
     if (winl.isMoving == "S" || winl.isMoving == "SE" || winl.isMoving == "SW")
     {
         //get mouse position
@@ -324,7 +408,9 @@ function mouseMove(e)
         
         //move window
         winl.style.height = height + "px";
+        cnt.style.height = height - head.clientHeight + "px";
     }
+    //top
     if (winl.isMoving == "N" || winl.isMoving == "NE" || winl.isMoving == "NW")
     {
         //get mouse position
@@ -344,8 +430,9 @@ function mouseMove(e)
         //move window
         winl.style.height = height + "px";
         winl.style.top = wTop + "px";
+        cnt.style.height = height - head.clientHeight + "px";
     }
-    
+    //left
     if (winl.isMoving == "E" || winl.isMoving == "SE" || winl.isMoving == "NE")
     {
         //get mouse position
@@ -360,7 +447,7 @@ function mouseMove(e)
         //move window
         winl.style.width = width + "px";
     }
-    
+    //right
     if (winl.isMoving == "W" || winl.isMoving == "SW" || winl.isMoving == "NW")
     {
         //get mouse position
@@ -372,7 +459,7 @@ function mouseMove(e)
         width = winl.clickSizeWidth - vPos;
         if (width < 200) 
         {
-            width = 200;      
+            width = 200;
             vPos = winl.clickSizeWidth - width;
         }
         wLeft = winl.clickWinPosX + vPos - 4;
@@ -381,12 +468,13 @@ function mouseMove(e)
         winl.style.width = width + "px";
         winl.style.left = wLeft + "px";
     }
-    
 }
 
 
-
-function init()
+/**
+ * Window manager initialization.
+ */
+function windowManagerInit()
 {
     //foreach desktop
     desktops = document.querySelectorAll(".desktop");
@@ -400,7 +488,7 @@ function init()
             win = windows[windows_i];
             
             //set proper z-index
-            document.body.onTopWindow = win;
+            desktop.onTopWindow = win;
             document.body.curZIndex = windows_i;
             
             //wrap content and create controls
@@ -416,6 +504,10 @@ function init()
             win.positionX = win.style.left;
             win.positionY = win.style.top;
             
+            cnt = win.querySelectorAll("div.content")[0];
+            head = win.querySelectorAll("div.header")[0];
+            cnt.style.height = win.clientHeight - head.clientHeight + "px";
+            
             //hook movement events
             win.isMoving = "No";
             header = win.querySelectorAll(".header")[0];
@@ -424,6 +516,7 @@ function init()
                 header.onmousedown = function(e){ mouseDown(e); };
                 document.onmouseup = function(e){ mouseUp(e); };
                 document.onmousemove = function(e){ mouseMove(e); };
+                win.onmousedown = function(e){ mouseDownEntireWindow(e); };
             }
             
             //hook control buttons events
@@ -466,12 +559,17 @@ function init()
             
             //hook resize controls events
             resizeCntrls = win.querySelectorAll(".resize");
-            //foreach button
+            //foreach border
             for (resizeCntrls_i = 0; resizeCntrls_i < resizeCntrls.length; resizeCntrls_i++)
             {
                 resizeCntrls[resizeCntrls_i].onmousedown = function(e){ mouseDown(e); };
             }
-            
         }
     }
+}
+
+//start when window loaded
+window.onload = function()
+{
+    windowManagerInit();
 }
