@@ -122,9 +122,9 @@ function drawHeader(win)
     win.innerHTML += '\
             <div class="header"> \
                 <span class="title">' + win.getAttribute("data-title") + '</span> \
-                <a href="#" title="Close" class="button close">X</a> \
-                <a href="#" title="Maximize" class="button maximize">☐</a> \
-                <a href="#" title="Minimize" class="button minimize">▂</a> \
+                <a href="javascript:" title="Close" class="button close">X</a> \
+                <a href="javascript:" title="Maximize" class="button maximize">☐</a> \
+                <a href="javascript:" title="Minimize" class="button minimize">▂</a> \
             </div> \
         ';
 }

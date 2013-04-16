@@ -1,4 +1,4 @@
-<!--
+﻿<!--
  
 Window manager in JavaScript documentation.
 
@@ -11,10 +11,6 @@ Author: Filip Zapletal (xzaple27@stud.fit.vutbr.cz)
     <head>
         <title>Návod pro Javascript Window Manager</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link type="text/css" rel="stylesheet" href="dp.SyntaxHighlighter/Styles/SyntaxHighlighter.css"></link>
-        <script language="javascript" src="dp.SyntaxHighlighter/Scripts/shCore.js"></script>
-        <script language="javascript" src="dp.SyntaxHighlighter/Scripts/shBrushJScript.js"></script>
-        <script language="javascript" src="dp.SyntaxHighlighter/Scripts/shBrushXml.js"></script>
         
         <style>
             body { font-family: Verdana, Arial, Helvetica, sans-serif; }
@@ -39,27 +35,87 @@ Author: Filip Zapletal (xzaple27@stud.fit.vutbr.cz)
         <p>
             Základem každé aplikace je takzvaný desktop. Je vytvořen pomocí bloku &lt;div class="desktop"&gt&lt;/div&gt. Každá stánka může 
             obsahovat více takovýchto elementů.
-        </p>
-        
-        <textarea name="code" class="js" cols="60" rows="10">
-        //hook resize controls events
-            resizeCntrls = win.querySelectorAll(".resize");
-            //foreach border
-            for (resizeCntrls_i = 0; resizeCntrls_i < resizeCntrls.length; resizeCntrls_i++)
-            {
-                resizeCntrls[resizeCntrls_i].onmousedown = function(e){ mouseDown(e); };
-            }            
-        </textarea>
-        
-        <h2>Poděkování</h2>
+            U každé vytvořené plochy pak lze upravit její výchozí vzhled a velikost pomocí standartních css vlastností. Takto například 
+            vytvoříme desktop o velikost 640 x 480 px s oranžovým pozadím.
+        </p>        
+        <pre name="code" class="xml">
+            &lt;div class="desktop" style="background-color: orange; width: 640px; height: 480px;"&gt;
+                ...
+            &lt;/div&gt;        
+        </pre>
         <p>
-            Pro zvýraznění syntaxe v tomto dokumentu je použita knihovna <a href="https://code.google.com/p/syntaxhighlighter/">syntaxhighlighter</a>.
-            
+            Každý element desktopu pak může obsahovat několik oken. Ty jsou vytvořeny pomocí &lt;div class="window"&gt&lt;/div&gt. Každé okno může mýt 
+            3 stavy, a to:
         </p>
-        
-        <script language="javascript">
-            dp.SyntaxHighlighter.ClipboardSwf = '/flash/clipboard.swf';
-            dp.SyntaxHighlighter.HighlightAll('code');
-        </script>
+        <ul>
+            <li>Normální</li>
+            <li>Minimalizované</li>
+            <li>Maximalizované</li>
+        </ul>
+        <p>
+            Výchozí stav okna pak definujeme pomocí doplňové třídy v definici. Minimalizované okno tedy vytvoříme pomocí &lt;div class="window minimized"&gt&lt;/div&gt, 
+            maximalizované pomocí &lt;div class="window maximized"&gt&lt;/div&gt. U každého okna pak lze specifikovat jeho titulek, a to pomocí dodatečného atributu
+            data-title="Titulek okna". Více oken s různými vlastnostmi v jednom desktopu tedy definujeme například takto:
+        </p>
+        <pre name="code" class="xml">
+            &lt;div class="desktop" style="background-color: orange; width: 640px; height: 480px;"&gt;
+                &lt;div class="window minimized" data-title="Okno 1"&gt;
+                    Obsah okna.
+                &lt;/div&gt;
+            
+                &lt;div class="window" data-title="Okno 2"&gt;
+                    Obsah okna.
+                &lt;/div&gt;
+            
+                &lt;div class="window" data-title="Okno 3" style=" width: 400px; height: 250px;"&gt;
+                    Obsah okna.
+                &lt;/div&gt;
+            &lt;/div&gt;  
+        </pre>
+        <p>
+            Pro správnou funkci je pak ještě třeba doplnit do HTML hlavičky nalinkování CSS stylů a JavaScriptu. Provedeme to například
+            takto: 
+        </p>
+        <pre name="code" class="xml">
+            &lt;link rel="stylesheet" href="windowManager.css" type="text/css" /&gt;        
+            &lt;script type="text/javascript" src="windowManager.js" /&gt;
+        </pre>
+
+        <h2>Kompletní příklad</h2>
+        <p>Kompletní příklad definice jednoho desktopu a 3 oken je pak následující:</p>
+        <pre name="code" class="xml">
+            &lt;html&gt;
+                &lt;head&gt;
+                    &lt;title&gt;Javascript Window Manager demo application&lt;/title&gt;
+                    &lt;link rel="stylesheet" href="windowManager.css" type="text/css" /&gt;        
+                    &lt;script type="text/javascript" src="windowManager.js" /&gt;
+                &lt;/head&gt;
+                &lt;body&gt;
+                    &lt;div class="desktop" style="background-color: red; width: 800px; height: 700px;"&gt;
+                        &lt;div class="window" data-title="Okno 1"&gt;
+                            &lt;p style="margin:5px"&gt;
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi sed nulla sit amet 
+                                mi tincidunt convallis. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus
+                                mus. Nulla facilisi. Mauris eget mattis turpis. Vivamus facilisis ornare rhoncus. In nec magna nunc. 
+                                In hac habitasse platea dictumst. Ut in purus id tellus mollis luctus. 
+                            &lt;/p&gt;               
+                        &lt;/div&gt;
+            
+                        &lt;div class="window" data-title="Okno 2"&gt;
+                            &lt;img style="border: white 35px solid;" src ="http://www.fit.vutbr.cz/images/logo_fit.png"/&gt;
+                        &lt;/div&gt;
+            
+                        &lt;div class="window" data-title="Okno 3"&gt;
+                            &nbsp;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;
+        </pre>
+
+        <h2>Demo aplikace</h2>
+        <p>Ukázka použití knihovny je <a href="demo.xhtml" target="_blank">tady</a>.</p>
+
+
     </body>
 </html>
